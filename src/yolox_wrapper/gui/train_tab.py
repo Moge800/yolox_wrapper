@@ -6,6 +6,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext, ttk
 from typing import Any
 
+import beep_lite
+
 from ..config import AppConfig, ProfileParams
 from ..wrapper import YOLOX
 
@@ -25,6 +27,7 @@ class TrainTab(ttk.Frame):
         self._thread: threading.Thread | None = None
         self._stop_event = threading.Event()
         self._log_queue: queue.Queue[str | None] = queue.Queue()
+        self._train_succeeded = False
 
         self._build()
         self.load_profile(profile_var.get())
@@ -229,8 +232,10 @@ class TrainTab(ttk.Frame):
                 on_stage_done=self._on_stage_done,
             )
             self._log_queue.put("[完了] 全ステージの学習が終了しました。")
+            self._train_succeeded = True
         except Exception as e:
             self._log_queue.put(f"[エラー] {e}")
+            self._train_succeeded = False
         finally:
             self._log_queue.put(None)  # 終了シグナル
 
@@ -249,6 +254,10 @@ class TrainTab(ttk.Frame):
                     # ステージ進捗を最終状態に更新
                     self._progress["value"] = self._progress["maximum"]
                     self._stage_label.config(text="完了")
+                    if self._train_succeeded:
+                        beep_lite.ok()
+                    else:
+                        beep_lite.ng()
                     return
                 self._append_log(line)
                 # ステージ完了行からプログレスを進める
