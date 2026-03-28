@@ -1,4 +1,3 @@
-# ty: ignore[unresolved-import]
 """YOLOX トレーニング内部実装モジュール
 
 このモジュールは yolox_wrapper.wrapper.YOLOX.train() から呼ばれる内部実装です。
@@ -151,7 +150,7 @@ def _build_exp(
 
             return COCOEvaluator(
                 dataloader=self.get_eval_loader(batch_size, is_distributed),
-                img_size=self.test_size,
+                img_size=self.test_size[0],  # type: ignore[index]
                 confthre=self.test_conf,
                 nmsthre=self.nmsthre,
                 num_classes=self.num_classes,
@@ -293,7 +292,7 @@ class _YOLOXTrainer:
                         lambda local_rank, _exp=exp, _args=args: Trainer(
                             _exp, _args
                         ).train(),
-                        num_gpus=num_gpu,
+                        num_gpus_per_machine=num_gpu,
                         num_machines=1,
                         machine_rank=0,
                         backend="nccl",

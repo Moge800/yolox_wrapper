@@ -33,7 +33,7 @@ import json
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import cv2
 import numpy as np
@@ -490,10 +490,10 @@ class YOLOX:
             from yolox.models import (
                 YOLOPAFPN,
                 YOLOXHead,
-            )  # ty: ignore[unresolved-import]
+            )
             from yolox.models import (
                 YOLOX as _YOLOXModel,
-            )  # ty: ignore[unresolved-import]
+            )
 
             nc = int(ckpt.get("nc", 80))
             depth = float(ckpt.get("depth", 0.33))
@@ -520,9 +520,7 @@ class YOLOX:
             if head is not None and hasattr(head, "num_classes"):
                 self._num_classes = int(head.num_classes)
             elif hasattr(self.model, "num_classes"):
-                self._num_classes = int(
-                    self.model.num_classes
-                )  # ty: ignore[invalid-argument-type]
+                self._num_classes = int(cast(int, self.model.num_classes))
         except Exception:
             pass
 
