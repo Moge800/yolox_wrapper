@@ -6,18 +6,26 @@ readme = "README.md"
 requires-python = ">=3.13"
 
 dependencies = [
-    # torch/torchvision は別途インストール (CUDA 版 / CPU 版)
-    # 工場機 (CUDA 12.6):
-    #   uv pip install --no-index --find-links ./wheels torch==2.6.0+cu126 torchvision==0.21.0+cu126
-    # 開発機 (CPU):
-    #   uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-    # YOLOX:
-    #   uv pip install git+https://github.com/Megvii-BaseDetection/YOLOX.git
-    #   uv pip install pycocotools-windows  # Windows の場合
     "numpy>=1.24,<2.0",
     "opencv-python>=4.8",
     "pillow>=10.0",
     "pyyaml>=6.0",
+    "torch>=2.11.0",
+    "torchvision>=0.26.0",
+    "yolox",
+]
+
+# ---------------------------------------------------------------------------
+# uv
+# ---------------------------------------------------------------------------
+[tool.uv.sources]
+yolox = { git = "https://github.com/Megvii-BaseDetection/YOLOX.git" }
+
+[tool.uv]
+# YOLOX が onnx-simplifier==0.4.10 をピン留めしているが Python 3.13 でビルド不可。
+# バージョンピンを緩和して解決する。
+override-dependencies = [
+    "onnx-simplifier>=0.4.10",
 ]
 
 [dependency-groups]

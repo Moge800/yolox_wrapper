@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """設定管理モジュール
 
 config.ini をプロジェクトルートから読み書きします。
@@ -15,9 +14,8 @@ config.ini をプロジェクトルートから読み書きします。
 """
 
 import configparser
-from pathlib import Path
 from dataclasses import dataclass, fields
-
+from pathlib import Path
 
 # config.ini の場所: プロジェクトルート (pyproject.toml と同階層)
 _DEFAULT_CONFIG_PATH = Path(__file__).parent.parent.parent / "config.ini"

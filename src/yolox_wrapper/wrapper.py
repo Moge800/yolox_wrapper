@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """YOLOX Wrapper Module
 
 ultralytics YOLO の API と互換性のある YOLOX ラッパーモジュールです。
@@ -43,12 +42,12 @@ import torch.nn as nn
 import yaml
 
 from ._trainer import _YOLOXTrainer
-from .dataset import DatasetPreparer, _MODEL_CONFIGS
-
+from .dataset import _MODEL_CONFIGS, DatasetPreparer
 
 # ---------------------------------------------------------------------------
 # モデルサイズ正規化
 # ---------------------------------------------------------------------------
+
 
 def _normalize_model_size(s: str) -> str:
     """'yolox_l', 'yolox-l', 'l' などを 'l' に正規化する"""
@@ -64,6 +63,7 @@ def _normalize_model_size(s: str) -> str:
 # ---------------------------------------------------------------------------
 # 結果オブジェクト (ultralytics Boxes / Results 互換)
 # ---------------------------------------------------------------------------
+
 
 class _YOLOXBox:
     """個別バウンディングボックス (ultralytics box オブジェクト互換)
@@ -84,7 +84,7 @@ class _YOLOXBox:
     ) -> None:
         self.xyxy = xyxy  # [1, 4]
         self.conf = conf  # [1]
-        self.cls = cls    # [1]
+        self.cls = cls  # [1]
 
 
 class YOLOXBoxes:
@@ -104,7 +104,7 @@ class YOLOXBoxes:
     ) -> None:
         self.xyxy = xyxy  # [N, 4]
         self.conf = conf  # [N]
-        self.cls = cls    # [N]
+        self.cls = cls  # [N]
 
     def __len__(self) -> int:
         return int(self.conf.shape[0])
@@ -165,7 +165,9 @@ class YOLOXResult:
                 (0, 255, 0),
                 -1,
             )
-            cv2.putText(result, label, (x1, y1 - 3), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
+            cv2.putText(
+                result, label, (x1, y1 - 3), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1
+            )
 
         return result
 
@@ -173,6 +175,7 @@ class YOLOXResult:
 # ---------------------------------------------------------------------------
 # 前処理・後処理ユーティリティ
 # ---------------------------------------------------------------------------
+
 
 def _letterbox(
     image: np.ndarray,
@@ -232,6 +235,7 @@ def _apply_nms(
     """NMS (torchvision があれば使用、なければフォールバック)"""
     try:
         from torchvision.ops import nms as tv_nms
+
         return tv_nms(boxes, scores, iou_threshold)
     except (ImportError, RuntimeError):
         return _nms_fallback(boxes, scores, iou_threshold)
@@ -263,9 +267,9 @@ def _postprocess(
         empty4 = torch.zeros((0, 4), dtype=torch.float32)
         return empty4, torch.zeros(0), torch.zeros(0)
 
-    boxes_f  = boxes_xyxy[mask]
+    boxes_f = boxes_xyxy[mask]
     scores_f = scores[mask]
-    cls_f    = cls_ids[mask].float()
+    cls_f = cls_ids[mask].float()
 
     boxes_f = boxes_f / ratio
     boxes_f[:, 0::2].clamp_(0.0, float(orig_w))
@@ -278,6 +282,7 @@ def _postprocess(
 # ---------------------------------------------------------------------------
 # メインラッパークラス
 # ---------------------------------------------------------------------------
+
 
 class YOLOX:
     """YOLOX モデルラッパー (ultralytics YOLO API 互換)
@@ -365,7 +370,11 @@ class YOLOX:
         # data.yaml 読み込み
         data_cfg = self._load_data_config(data)
         output_dir = data_cfg.get("output_dir", "./yolox_work")
-        effective_val_split = val_split if val_split is not None else float(data_cfg.get("val_split", 0.2))
+        effective_val_split = (
+            val_split
+            if val_split is not None
+            else float(data_cfg.get("val_split", 0.2))
+        )
 
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
@@ -377,7 +386,9 @@ class YOLOX:
             epoch_schedule = sorted(set(epochs))
 
         if on_log:
-            on_log(f"[YOLOX] 学習開始: model={self._model_size}, epochs={epoch_schedule}, device={device}")
+            on_log(
+                f"[YOLOX] 学習開始: model={self._model_size}, epochs={epoch_schedule}, device={device}"
+            )
 
         # 1. データセット整備
         if on_log:
@@ -461,7 +472,8 @@ class YOLOX:
             if "nc" in ckpt:
                 self._num_classes = int(ckpt["nc"])
             if "input_size" in ckpt:
-                self._input_size = tuple(int(x) for x in ckpt["input_size"])  # type: ignore[assignment]
+                raw_size = ckpt["input_size"]
+                self._input_size = (int(raw_size[0]), int(raw_size[1]))
         else:
             raise ValueError(f"未対応のチェックポイント形式: {type(ckpt)}")
 
@@ -469,28 +481,36 @@ class YOLOX:
         self._infer_class_info()
 
         if verbose:
-            print(f"[YOLOX] モデル読み込み完了: {model_path} (クラス数: {self._num_classes})")
+            print(
+                f"[YOLOX] モデル読み込み完了: {model_path} (クラス数: {self._num_classes})"
+            )
 
     def _build_from_state_dict(self, state_dict: dict, ckpt: dict) -> nn.Module:
         try:
-            from yolox.models import YOLOX as _YOLOXModel, YOLOPAFPN, YOLOXHead
+            from yolox.models import (
+                YOLOPAFPN,
+                YOLOXHead,
+            )  # ty: ignore[unresolved-import]
+            from yolox.models import (
+                YOLOX as _YOLOXModel,
+            )  # ty: ignore[unresolved-import]
 
-            nc    = int(ckpt.get("nc", 80))
+            nc = int(ckpt.get("nc", 80))
             depth = float(ckpt.get("depth", 0.33))
             width = float(ckpt.get("width", 0.50))
             in_ch = [256, 512, 1024]
 
             backbone = YOLOPAFPN(depth, width, in_channels=in_ch)
-            head     = YOLOXHead(nc, width, in_channels=in_ch)
-            model    = _YOLOXModel(backbone, head)
+            head = YOLOXHead(nc, width, in_channels=in_ch)
+            model = _YOLOXModel(backbone, head)
             model.load_state_dict(state_dict)
             return model
 
-        except ImportError:
+        except ImportError as e:
             raise ImportError(
                 "state_dict 形式のチェックポイントを読み込むには yolox パッケージが必要です。\n"
                 "  uv pip install git+https://github.com/Megvii-BaseDetection/YOLOX.git"
-            )
+            ) from e
 
     def _infer_class_info(self) -> None:
         if self.model is None:
@@ -500,7 +520,9 @@ class YOLOX:
             if head is not None and hasattr(head, "num_classes"):
                 self._num_classes = int(head.num_classes)
             elif hasattr(self.model, "num_classes"):
-                self._num_classes = int(self.model.num_classes)
+                self._num_classes = int(
+                    self.model.num_classes
+                )  # ty: ignore[invalid-argument-type]
         except Exception:
             pass
 
@@ -517,7 +539,7 @@ class YOLOX:
             try:
                 for m in self.model.modules():
                     if hasattr(m, "switch_to_deploy"):
-                        m.switch_to_deploy()
+                        m.switch_to_deploy()  # ty: ignore[call-non-callable]
             except Exception:
                 pass
         return self
@@ -591,12 +613,14 @@ class YOLOX:
                         torch.zeros(0, dtype=torch.float32),
                     )
 
-                results.append(YOLOXResult(
-                    boxes=yolox_boxes,
-                    names=self._class_names,
-                    orig_shape=(orig_h, orig_w),
-                    orig_img=image,
-                ))
+                results.append(
+                    YOLOXResult(
+                        boxes=yolox_boxes,
+                        names=self._class_names,
+                        orig_shape=(orig_h, orig_w),
+                        orig_img=image,
+                    )
+                )
 
         return results
 
@@ -631,9 +655,9 @@ class YOLOX:
             raise RuntimeError("モデルが読み込まれていません")
         torch.save(
             {
-                "model":      self.model,
-                "names":      self._class_names,
-                "nc":         self._num_classes,
+                "model": self.model,
+                "names": self._class_names,
+                "nc": self._num_classes,
                 "input_size": list(self._input_size),
             },
             path,
@@ -666,11 +690,11 @@ class YOLOX:
 
         dummy = torch.zeros(1, 3, *self._input_size)
         prev_device = self._current_device
-        model_cpu = self.model.cpu().eval()  # type: ignore[union-attr]
+        model_cpu = self.model.cpu().eval()  # type: ignore[union-attr]  # ty: ignore[unresolved-attribute]
 
         torch.onnx.export(
             model_cpu,
-            dummy,
+            (dummy,),
             output_path,
             input_names=["images"],
             output_names=["output"],
@@ -679,7 +703,8 @@ class YOLOX:
         )
 
         if prev_device != "cpu":
-            self.model = self.model.to(prev_device)  # type: ignore[union-attr]
+            self.model = self.model.to(prev_device)  # type: ignore[union-attr]  # ty: ignore[unresolved-attribute]
+            self._current_device = prev_device
 
         print(f"[YOLOX] ONNX エクスポート完了: {output_path}")
         return output_path

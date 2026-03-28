@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """YOLOX Wrapper パッケージ
 
 使用例::
@@ -13,7 +12,7 @@
     model.export(format="onnx")
 """
 
-from .wrapper import YOLOX, YOLOXBoxes, YOLOXResult
 from .config import AppConfig, ProfileParams
+from .wrapper import YOLOX, YOLOXBoxes, YOLOXResult
 
 __all__ = ["YOLOX", "YOLOXBoxes", "YOLOXResult", "AppConfig", "ProfileParams"]

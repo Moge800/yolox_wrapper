@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """学習タブ"""
 
 import queue
@@ -25,7 +24,7 @@ class TrainTab(ttk.Frame):
         self._profile_var = profile_var
         self._thread: threading.Thread | None = None
         self._stop_event = threading.Event()
-        self._log_queue: queue.Queue[str] = queue.Queue()
+        self._log_queue: queue.Queue[str | None] = queue.Queue()
 
         self._build()
         self.load_profile(profile_var.get())
@@ -41,46 +40,67 @@ class TrainTab(ttk.Frame):
 
         # data.yaml
         self._data_var = tk.StringVar()
-        self._add_path_row(left, "data.yaml:", self._data_var, is_file=True,
-                           filetypes=[("YAML", "*.yaml *.yml"), ("全ファイル", "*.*")])
+        self._add_path_row(
+            left,
+            "data.yaml:",
+            self._data_var,
+            is_file=True,
+            filetypes=[("YAML", "*.yaml *.yml"), ("全ファイル", "*.*")],
+        )
 
         # モデルサイズ
         ttk.Label(left, text="モデルサイズ:").pack(anchor="w", pady=(6, 0))
         self._model_var = tk.StringVar(value="l")
-        ttk.Combobox(left, textvariable=self._model_var,
-                     values=["nano", "tiny", "s", "m", "l", "x"],
-                     state="readonly", width=10).pack(anchor="w")
+        ttk.Combobox(
+            left,
+            textvariable=self._model_var,
+            values=["nano", "tiny", "s", "m", "l", "x"],
+            state="readonly",
+            width=10,
+        ).pack(anchor="w")
 
         # エポックスケジュール
-        ttk.Label(left, text="エポック (例: 100,200,300):").pack(anchor="w", pady=(6, 0))
+        ttk.Label(left, text="エポック (例: 100,200,300):").pack(
+            anchor="w", pady=(6, 0)
+        )
         self._epochs_var = tk.StringVar(value="100,200,300")
         ttk.Entry(left, textvariable=self._epochs_var, width=20).pack(anchor="w")
 
         # バッチサイズ
         ttk.Label(left, text="バッチサイズ:").pack(anchor="w", pady=(6, 0))
         self._batch_var = tk.IntVar(value=16)
-        ttk.Spinbox(left, from_=1, to=256, textvariable=self._batch_var, width=8).pack(anchor="w")
+        ttk.Spinbox(left, from_=1, to=256, textvariable=self._batch_var, width=8).pack(
+            anchor="w"
+        )
 
         # 入力サイズ
         ttk.Label(left, text="入力サイズ (imgsz):").pack(anchor="w", pady=(6, 0))
         self._imgsz_var = tk.IntVar(value=640)
-        ttk.Spinbox(left, from_=32, to=1920, increment=32,
-                    textvariable=self._imgsz_var, width=8).pack(anchor="w")
+        ttk.Spinbox(
+            left, from_=32, to=1920, increment=32, textvariable=self._imgsz_var, width=8
+        ).pack(anchor="w")
 
         # ワーカー数
         ttk.Label(left, text="ワーカー数:").pack(anchor="w", pady=(6, 0))
         self._workers_var = tk.IntVar(value=4)
-        ttk.Spinbox(left, from_=0, to=16, textvariable=self._workers_var, width=8).pack(anchor="w")
+        ttk.Spinbox(left, from_=0, to=16, textvariable=self._workers_var, width=8).pack(
+            anchor="w"
+        )
 
         # val 分割比
         ttk.Label(left, text="val 分割比:").pack(anchor="w", pady=(6, 0))
         self._val_split_var = tk.DoubleVar(value=0.2)
         val_frame = ttk.Frame(left)
         val_frame.pack(anchor="w")
-        ttk.Scale(val_frame, from_=0.05, to=0.5, variable=self._val_split_var,
-                  orient="horizontal", length=120,
-                  command=lambda v: self._val_label.config(
-                      text=f"{float(v):.0%}")).pack(side="left")
+        ttk.Scale(
+            val_frame,
+            from_=0.05,
+            to=0.5,
+            variable=self._val_split_var,
+            orient="horizontal",
+            length=120,
+            command=lambda v: self._val_label.config(text=f"{float(v):.0%}"),
+        ).pack(side="left")
         self._val_label = ttk.Label(val_frame, text="20%", width=5)
         self._val_label.pack(side="left")
 
@@ -90,10 +110,12 @@ class TrainTab(ttk.Frame):
         self._device_var = tk.StringVar(value="cpu")
         device_frame = ttk.Frame(left)
         device_frame.pack(anchor="w")
-        ttk.Radiobutton(device_frame, text="CPU", variable=self._device_var,
-                        value="cpu").pack(side="left")
-        self._gpu_radio = ttk.Radiobutton(device_frame, text="GPU (cuda:0)",
-                                          variable=self._device_var, value="cuda:0")
+        ttk.Radiobutton(
+            device_frame, text="CPU", variable=self._device_var, value="cpu"
+        ).pack(side="left")
+        self._gpu_radio = ttk.Radiobutton(
+            device_frame, text="GPU (cuda:0)", variable=self._device_var, value="cuda:0"
+        )
         self._gpu_radio.pack(side="left")
 
         self._check_gpu()
@@ -104,8 +126,9 @@ class TrainTab(ttk.Frame):
         btn_frame.pack(fill="x")
         self._start_btn = ttk.Button(btn_frame, text="学習開始", command=self._start)
         self._start_btn.pack(side="left", expand=True, fill="x", padx=(0, 2))
-        self._stop_btn = ttk.Button(btn_frame, text="停止", command=self._stop,
-                                    state="disabled")
+        self._stop_btn = ttk.Button(
+            btn_frame, text="停止", command=self._stop, state="disabled"
+        )
         self._stop_btn.pack(side="left", expand=True, fill="x", padx=(2, 0))
 
         # 右ペイン: 進捗 + ログ
@@ -209,7 +232,7 @@ class TrainTab(ttk.Frame):
         except Exception as e:
             self._log_queue.put(f"[エラー] {e}")
         finally:
-            self._log_queue.put(None)  # type: ignore[arg-type]  # 終了シグナル
+            self._log_queue.put(None)  # 終了シグナル
 
     def _on_stage_done(self, stage_idx: int, epoch: int, ckpt_path: str) -> None:
         total = self._progress["maximum"]
@@ -251,8 +274,8 @@ class TrainTab(ttk.Frame):
             raise ValueError("エポック数を入力してください。")
         try:
             values = [int(p) for p in parts]
-        except ValueError:
-            raise ValueError(f"エポック数は整数で指定してください: {text}")
+        except ValueError as e:
+            raise ValueError(f"エポック数は整数で指定してください: {text}") from e
         if any(v <= 0 for v in values):
             raise ValueError("エポック数は 1 以上の整数で指定してください。")
         return sorted(set(values))
@@ -260,6 +283,7 @@ class TrainTab(ttk.Frame):
     def _check_gpu(self) -> None:
         try:
             import torch
+
             if not torch.cuda.is_available():
                 self._gpu_radio.config(state="disabled")
                 self._device_var.set("cpu")
@@ -295,9 +319,13 @@ class TrainTab(ttk.Frame):
         row = ttk.Frame(parent)
         row.pack(fill="x")
         ttk.Entry(row, textvariable=var).pack(side="left", fill="x", expand=True)
-        cmd = (lambda v=var, ft=filetypes: v.set(
-            filedialog.askopenfilename(filetypes=ft or [("全ファイル", "*.*")])
-        )) if is_file else (lambda v=var: v.set(
-            filedialog.askdirectory()
-        ))
+        cmd = (
+            (
+                lambda v=var, ft=filetypes: v.set(
+                    filedialog.askopenfilename(filetypes=ft or [("全ファイル", "*.*")])
+                )
+            )
+            if is_file
+            else (lambda v=var: v.set(filedialog.askdirectory()))
+        )
         ttk.Button(row, text="...", width=3, command=cmd).pack(side="left")

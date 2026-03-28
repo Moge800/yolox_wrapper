@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """AppConfig のテスト"""
 
 from pathlib import Path

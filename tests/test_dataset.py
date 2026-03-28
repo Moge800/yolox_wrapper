@@ -1,14 +1,11 @@
-# -*- coding: utf-8 -*-
 """DatasetPreparer のテスト"""
 
 import json
-import shutil
 from pathlib import Path
 
 import pytest
 
 from yolox_wrapper.dataset import DatasetPreparer
-
 
 # ---------------------------------------------------------------------------
 # フィクスチャ

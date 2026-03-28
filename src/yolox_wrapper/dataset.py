@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """データセット準備モジュール
 
 Label Studio の COCO エクスポートを YOLOX 学習構造へ変換します。
@@ -28,7 +27,6 @@ import shutil
 import warnings
 from pathlib import Path
 from typing import Any
-
 
 _MODEL_CONFIGS: dict[str, dict[str, float]] = {
     "nano":  {"depth": 0.33, "width": 0.25},

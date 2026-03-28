@@ -1,14 +1,13 @@
-# -*- coding: utf-8 -*-
 """メインウィンドウ"""
 
 import tkinter as tk
 from tkinter import ttk
 
 from ..config import AppConfig
-from .train_tab import TrainTab
-from .infer_tab import InferTab
 from .camera_tab import CameraTab
 from .export_tab import ExportTab
+from .infer_tab import InferTab
+from .train_tab import TrainTab
 
 
 class App(tk.Tk):
@@ -38,8 +37,12 @@ class App(tk.Tk):
 
         profile_menu = tk.Menu(menubar, tearoff=False)
         menubar.add_cascade(label="プロファイル", menu=profile_menu)
-        profile_menu.add_command(label="プロファイルを追加...", command=self._add_profile)
-        profile_menu.add_command(label="プロファイルを削除", command=self._remove_profile)
+        profile_menu.add_command(
+            label="プロファイルを追加...", command=self._add_profile
+        )
+        profile_menu.add_command(
+            label="プロファイルを削除", command=self._remove_profile
+        )
 
     def _build_profile_bar(self) -> None:
         """プロファイル選択バー"""
@@ -65,17 +68,17 @@ class App(tk.Tk):
         self._nb = ttk.Notebook(self)
         self._nb.pack(fill="both", expand=True, padx=4, pady=4)
 
-        self._train_tab  = TrainTab(self._nb, self.config_mgr, self._profile_var)
-        self._infer_tab  = InferTab(self._nb, self.config_mgr, self._profile_var)
+        self._train_tab = TrainTab(self._nb, self.config_mgr, self._profile_var)
+        self._infer_tab = InferTab(self._nb, self.config_mgr, self._profile_var)
         self._camera_tab = CameraTab(self._nb, self.config_mgr, self._profile_var)
         self._export_tab = ExportTab(self._nb)
 
-        self._nb.add(self._train_tab,  text="  学習  ")
-        self._nb.add(self._infer_tab,  text="  推論テスト  ")
+        self._nb.add(self._train_tab, text="  学習  ")
+        self._nb.add(self._infer_tab, text="  推論テスト  ")
         self._nb.add(self._camera_tab, text="  カメラテスト  ")
         self._nb.add(self._export_tab, text="  ONNX エクスポート  ")
 
-    def _on_profile_changed(self, _event: tk.Event) -> None:  # type: ignore[type-arg]
+    def _on_profile_changed(self, _event: tk.Event | None = None) -> None:  # type: ignore[type-arg]
         profile = self._profile_var.get()
         self._train_tab.load_profile(profile)
         self._infer_tab.load_profile(profile)
@@ -90,6 +93,7 @@ class App(tk.Tk):
 
     def _add_profile(self) -> None:
         from tkinter.simpledialog import askstring
+
         name = askstring("プロファイル追加", "新しいプロファイル名:", parent=self)
         if name and name.strip():
             self.config_mgr.add_profile(name.strip())
@@ -99,14 +103,18 @@ class App(tk.Tk):
         profile = self._profile_var.get()
         if profile == "default":
             from tkinter.messagebox import showwarning
-            showwarning("削除不可", "'default' プロファイルは削除できません。", parent=self)
+
+            showwarning(
+                "削除不可", "'default' プロファイルは削除できません。", parent=self
+            )
             return
         from tkinter.messagebox import askyesno
+
         if askyesno("確認", f"プロファイル '{profile}' を削除しますか？", parent=self):
             self.config_mgr.remove_profile(profile)
             self._profile_var.set("default")
             self._refresh_profile_list()
-            self._on_profile_changed(None)  # type: ignore[arg-type]
+            self._on_profile_changed(None)
 
     def _refresh_profile_list(self) -> None:
         self._profile_cb["values"] = self.config_mgr.profiles()

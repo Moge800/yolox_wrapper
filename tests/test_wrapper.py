@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
 """YOLOX wrapper のテスト (yolox パッケージ不要な部分のみ)"""
 
-import json
 from pathlib import Path
 
 import numpy as np
@@ -13,12 +11,11 @@ from yolox_wrapper.wrapper import (
     YOLOX,
     YOLOXBoxes,
     YOLOXResult,
-    _YOLOXBox,
     _letterbox,
     _nms_fallback,
     _normalize_model_size,
+    _YOLOXBox,
 )
-
 
 # ---------------------------------------------------------------------------
 # _normalize_model_size

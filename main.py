@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """YOLOX Wrapper エントリポイント
 
 GUI 起動:

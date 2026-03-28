@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """推論テストタブ"""
 
 import tkinter as tk
@@ -37,36 +36,54 @@ class InferTab(ttk.Frame):
 
         # モデルパス
         self._model_var = tk.StringVar()
-        self._add_path_row(left, "モデル (.pt):", self._model_var, is_file=True,
-                           filetypes=[("PyTorch モデル", "*.pt"), ("全ファイル", "*.*")])
+        self._add_path_row(
+            left,
+            "モデル (.pt):",
+            self._model_var,
+            is_file=True,
+            filetypes=[("PyTorch モデル", "*.pt"), ("全ファイル", "*.*")],
+        )
 
         # 画像パス
         self._source_var = tk.StringVar()
         ttk.Label(left, text="画像 / ディレクトリ:").pack(anchor="w", pady=(6, 0))
         row = ttk.Frame(left)
         row.pack(fill="x")
-        ttk.Entry(row, textvariable=self._source_var).pack(side="left", fill="x", expand=True)
-        ttk.Button(row, text="...", width=3,
-                   command=self._browse_source).pack(side="left")
+        ttk.Entry(row, textvariable=self._source_var).pack(
+            side="left", fill="x", expand=True
+        )
+        ttk.Button(row, text="...", width=3, command=self._browse_source).pack(
+            side="left"
+        )
 
         # conf / iou
         ttk.Separator(left, orient="horizontal").pack(fill="x", pady=8)
         ttk.Label(left, text="conf 閾値:").pack(anchor="w")
         self._conf_var = tk.DoubleVar(value=0.25)
         self._conf_label = ttk.Label(left, text="0.25")
-        ttk.Scale(left, from_=0.01, to=1.0, variable=self._conf_var, orient="horizontal",
-                  length=160,
-                  command=lambda v: self._conf_label.config(text=f"{float(v):.2f}")
-                  ).pack(anchor="w")
+        ttk.Scale(
+            left,
+            from_=0.01,
+            to=1.0,
+            variable=self._conf_var,
+            orient="horizontal",
+            length=160,
+            command=lambda v: self._conf_label.config(text=f"{float(v):.2f}"),
+        ).pack(anchor="w")
         self._conf_label.pack(anchor="e")
 
         ttk.Label(left, text="IOU 閾値:").pack(anchor="w", pady=(6, 0))
         self._iou_var = tk.DoubleVar(value=0.45)
         self._iou_label = ttk.Label(left, text="0.45")
-        ttk.Scale(left, from_=0.01, to=1.0, variable=self._iou_var, orient="horizontal",
-                  length=160,
-                  command=lambda v: self._iou_label.config(text=f"{float(v):.2f}")
-                  ).pack(anchor="w")
+        ttk.Scale(
+            left,
+            from_=0.01,
+            to=1.0,
+            variable=self._iou_var,
+            orient="horizontal",
+            length=160,
+            command=lambda v: self._iou_label.config(text=f"{float(v):.2f}"),
+        ).pack(anchor="w")
         self._iou_label.pack(anchor="e")
 
         # デバイス
@@ -75,10 +92,12 @@ class InferTab(ttk.Frame):
         self._device_var = tk.StringVar(value="cpu")
         dev_frame = ttk.Frame(left)
         dev_frame.pack(anchor="w")
-        ttk.Radiobutton(dev_frame, text="CPU", variable=self._device_var,
-                        value="cpu").pack(side="left")
-        self._gpu_radio = ttk.Radiobutton(dev_frame, text="GPU", variable=self._device_var,
-                                          value="cuda:0")
+        ttk.Radiobutton(
+            dev_frame, text="CPU", variable=self._device_var, value="cpu"
+        ).pack(side="left")
+        self._gpu_radio = ttk.Radiobutton(
+            dev_frame, text="GPU", variable=self._device_var, value="cuda:0"
+        )
         self._gpu_radio.pack(side="left")
         self._check_gpu()
 
@@ -91,8 +110,9 @@ class InferTab(ttk.Frame):
         right.pack(side="left", fill="both", expand=True)
 
         # 画像表示
-        self._img_label = ttk.Label(right, text="(画像がここに表示されます)",
-                                    anchor="center", relief="sunken")
+        self._img_label = ttk.Label(
+            right, text="(画像がここに表示されます)", anchor="center", relief="sunken"
+        )
         self._img_label.pack(fill="both", expand=True)
 
         # 検出結果テキスト
@@ -139,7 +159,7 @@ class InferTab(ttk.Frame):
                 self._model = YOLOX(model_path)
                 self._loaded_model_path = model_path
 
-            results = self._model.predict(  # type: ignore[union-attr]
+            results = self._model.predict(  # type: ignore[union-attr]  # ty: ignore[unresolved-attribute]
                 source,
                 conf=self._conf_var.get(),
                 iou=self._iou_var.get(),
@@ -178,16 +198,17 @@ class InferTab(ttk.Frame):
 
     def _show_image(self, bgr: np.ndarray) -> None:
         import cv2
+
         rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
         pil = Image.fromarray(rgb)
 
         w = self._img_label.winfo_width() or 640
         h = self._img_label.winfo_height() or 480
-        pil.thumbnail((w, h), Image.LANCZOS)
+        pil.thumbnail((w, h), Image.Resampling.LANCZOS)
 
         photo = ImageTk.PhotoImage(pil)
         self._img_label.config(image=photo, text="")
-        self._img_label.image = photo  # type: ignore[attr-defined]
+        self._img_label.image = photo  # type: ignore[attr-defined]  # ty: ignore[invalid-assignment]
 
     # ------------------------------------------------------------------
     # ユーティリティ
@@ -203,6 +224,7 @@ class InferTab(ttk.Frame):
     def _check_gpu(self) -> None:
         try:
             import torch
+
             if not torch.cuda.is_available():
                 self._gpu_radio.config(state="disabled")
                 self._device_var.set("cpu")
@@ -221,7 +243,8 @@ class InferTab(ttk.Frame):
         row = ttk.Frame(parent)
         row.pack(fill="x")
         ttk.Entry(row, textvariable=var).pack(side="left", fill="x", expand=True)
-        cmd = lambda v=var, ft=filetypes: v.set(
-            filedialog.askopenfilename(filetypes=ft or [("全ファイル", "*.*")])
-        )
+
+        def cmd(v=var, ft=filetypes):
+            v.set(filedialog.askopenfilename(filetypes=ft or [("全ファイル", "*.*")]))
+
         ttk.Button(row, text="...", width=3, command=cmd).pack(side="left")

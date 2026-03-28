@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 """ONNX エクスポートタブ"""
 
 import threading
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
 from pathlib import Path
+from tkinter import filedialog, messagebox, ttk
 
 from ..wrapper import YOLOX
 
@@ -74,7 +73,8 @@ class ExportTab(ttk.Frame):
             result = model.export(format="onnx", output_path=output_path)
             self.after(0, lambda: self._on_done(result))
         except Exception as e:
-            self.after(0, lambda: self._on_error(str(e)))
+            msg = str(e)
+            self.after(0, lambda: self._on_error(msg))
 
     def _on_done(self, output_path: str) -> None:
         self._export_btn.config(state="normal")

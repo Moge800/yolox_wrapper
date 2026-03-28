@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# ty: ignore[unresolved-import]
 """YOLOX トレーニング内部実装モジュール
 
 このモジュールは yolox_wrapper.wrapper.YOLOX.train() から呼ばれる内部実装です。
@@ -13,7 +13,6 @@
 
 import argparse
 import io
-import json
 import shutil
 import sys
 import threading
@@ -21,12 +20,12 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from .dataset import _MODEL_CONFIGS, DatasetPreparer
-
+from .dataset import _MODEL_CONFIGS
 
 # ---------------------------------------------------------------------------
 # ログリダイレクター
 # ---------------------------------------------------------------------------
+
 
 class _LogRedirector:
     """sys.stdout を一時的にコールバックへリダイレクトするコンテキストマネージャ"""
@@ -71,6 +70,7 @@ class _CallbackStream(io.TextIOBase):
 # Exp 生成
 # ---------------------------------------------------------------------------
 
+
 def _build_exp(
     num_classes: int,
     data_dir: str,
@@ -87,37 +87,38 @@ def _build_exp(
     """動的に YOLOX Exp サブクラスを生成する"""
     try:
         from yolox.exp import Exp as BaseExp
-    except ImportError:
+    except ImportError as e:
         raise ImportError(
             "yolox パッケージが必要です。\n"
             "  uv pip install git+https://github.com/Megvii-BaseDetection/YOLOX.git\n"
             "  uv pip install pycocotools-windows  # Windows の場合"
-        )
+        ) from e
 
     class YOLOXExp(BaseExp):
         def __init__(self):
             super().__init__()
-            self.num_classes      = num_classes
-            self.depth            = depth
-            self.width            = width
-            self.input_size       = input_size
-            self.test_size        = input_size
-            self.max_epoch        = max_epoch
-            self.warmup_epochs    = max(1, min(5, max_epoch // 10))
-            self.no_aug_epochs    = max(1, min(15, max_epoch // 5))
+            self.num_classes = num_classes
+            self.depth = depth
+            self.width = width
+            self.input_size = input_size
+            self.test_size = input_size
+            self.max_epoch = max_epoch
+            self.warmup_epochs = max(1, min(5, max_epoch // 10))
+            self.no_aug_epochs = max(1, min(15, max_epoch // 5))
             self.basic_lr_per_img = basic_lr_per_img
-            self.data_dir         = data_dir
-            self.train_ann        = train_ann
-            self.val_ann          = val_ann
-            self.train_name       = "train"
-            self.val_name         = "val"
+            self.data_dir = data_dir
+            self.train_ann = train_ann
+            self.val_ann = val_ann
+            self.train_name = "train"
+            self.val_name = "val"
             self.data_num_workers = num_workers
-            self.eval_interval    = 5
-            self.test_conf        = 0.01
-            self.nmsthre          = 0.65
+            self.eval_interval = 5
+            self.test_conf = 0.01
+            self.nmsthre = 0.65
 
         def get_dataset(self, cache=False, cache_type="ram"):
             from yolox.data import COCODataset, TrainTransform
+
             return COCODataset(
                 data_dir=self.data_dir,
                 json_file=self.train_ann,
@@ -134,6 +135,7 @@ def _build_exp(
 
         def get_eval_dataset(self, **kwargs):
             from yolox.data import COCODataset, ValTransform
+
             return COCODataset(
                 data_dir=self.data_dir,
                 json_file=self.val_ann,
@@ -142,8 +144,11 @@ def _build_exp(
                 name=self.val_name,
             )
 
-        def get_evaluator(self, batch_size, is_distributed, testdev=False, legacy=False):
+        def get_evaluator(
+            self, batch_size, is_distributed, testdev=False, legacy=False
+        ):
             from yolox.evaluators import COCOEvaluator
+
             return COCOEvaluator(
                 dataloader=self.get_eval_loader(batch_size, is_distributed),
                 img_size=self.test_size,
@@ -161,6 +166,7 @@ def _build_exp(
 # ---------------------------------------------------------------------------
 # トレーナー
 # ---------------------------------------------------------------------------
+
 
 class _YOLOXTrainer:
     """YOLOX トレーニングを管理するクラス
@@ -186,14 +192,14 @@ class _YOLOXTrainer:
                 f"使用可能: {list(_MODEL_CONFIGS.keys())}"
             )
 
-        self.model_size       = model_size
-        self.num_classes      = num_classes
-        self.dataset_dir      = dataset_dir
-        self.output_dir       = Path(output_dir)
-        self.input_size       = input_size
-        self.batch_size       = batch_size
-        self.device           = device
-        self.num_workers      = num_workers
+        self.model_size = model_size
+        self.num_classes = num_classes
+        self.dataset_dir = dataset_dir
+        self.output_dir = Path(output_dir)
+        self.input_size = input_size
+        self.batch_size = batch_size
+        self.device = device
+        self.num_workers = num_workers
         self.basic_lr_per_img = basic_lr_per_img
 
     def train_sequential(
@@ -217,11 +223,11 @@ class _YOLOXTrainer:
         try:
             import torch
             from yolox.core import Trainer
-        except ImportError:
+        except ImportError as e:
             raise ImportError(
                 "yolox パッケージが必要です。\n"
                 "  uv pip install git+https://github.com/Megvii-BaseDetection/YOLOX.git"
-            )
+            ) from e
 
         cfg = _MODEL_CONFIGS[self.model_size]
         num_gpu, device_id = self._parse_device(self.device)
@@ -243,7 +249,9 @@ class _YOLOXTrainer:
                 break
 
             if on_log:
-                on_log(f"[Trainer] ===== Stage {i + 1}/{len(epoch_schedule)} | target epoch: {target_epoch} =====")
+                on_log(
+                    f"[Trainer] ===== Stage {i + 1}/{len(epoch_schedule)} | target epoch: {target_epoch} ====="
+                )
 
             exp_cls = _build_exp(
                 num_classes=self.num_classes,
@@ -260,9 +268,9 @@ class _YOLOXTrainer:
             )
             exp = exp_cls()
             exp.output_dir = train_output_dir
-            exp.exp_name   = exp_name
+            exp.exp_name = exp_name
 
-            resume = (i > 0)
+            resume = i > 0
             args = argparse.Namespace(
                 experiment_name=exp_name,
                 resume=resume,
@@ -280,8 +288,11 @@ class _YOLOXTrainer:
             with _LogRedirector(on_log):
                 if num_gpu > 1:
                     from yolox.core import launch
+
                     launch(
-                        lambda local_rank: Trainer(exp, args).train(),
+                        lambda local_rank, _exp=exp, _args=args: Trainer(
+                            _exp, _args
+                        ).train(),
                         num_gpus=num_gpu,
                         num_machines=1,
                         machine_rank=0,
@@ -294,7 +305,11 @@ class _YOLOXTrainer:
 
             # スナップショット保存
             last_ckpt = Path(train_output_dir) / exp_name / "last_epoch_ckpt.pth"
-            snap = Path(train_output_dir) / exp_name / f"stage_{i}_epoch{target_epoch}_ckpt.pth"
+            snap = (
+                Path(train_output_dir)
+                / exp_name
+                / f"stage_{i}_epoch{target_epoch}_ckpt.pth"
+            )
             if last_ckpt.exists():
                 shutil.copy2(last_ckpt, snap)
                 last_ckpt_path = str(snap)
@@ -345,9 +360,9 @@ class _YOLOXTrainer:
 
         torch.save(
             {
-                "model":      model,
-                "names":      class_names,
-                "nc":         len(class_names),
+                "model": model,
+                "names": class_names,
+                "nc": len(class_names),
                 "input_size": list(self.input_size),
             },
             output_model_path,
@@ -382,9 +397,10 @@ class _YOLOXTrainer:
 
     def _build_model(self, depth: float, width: float, num_classes: int):
         try:
-            from yolox.models import YOLOX as _YOLOXModel, YOLOPAFPN, YOLOXHead
-        except ImportError:
-            raise ImportError("yolox パッケージが必要です。")
+            from yolox.models import YOLOPAFPN, YOLOXHead
+            from yolox.models import YOLOX as _YOLOXModel
+        except ImportError as e:
+            raise ImportError("yolox パッケージが必要です。") from e
 
         in_channels = [256, 512, 1024]
         backbone = YOLOPAFPN(depth, width, in_channels=in_channels)
