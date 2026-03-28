@@ -184,6 +184,7 @@ class _YOLOXTrainer:
         device: str = "cpu",
         num_workers: int = 4,
         basic_lr_per_img: float = 0.01 / 64,
+        pretrained_weights: str | None = None,
     ) -> None:
         if model_size not in _MODEL_CONFIGS:
             raise ValueError(
@@ -200,6 +201,7 @@ class _YOLOXTrainer:
         self.device = device
         self.num_workers = num_workers
         self.basic_lr_per_img = basic_lr_per_img
+        self.pretrained_weights = pretrained_weights
 
     def train_sequential(
         self,
@@ -270,10 +272,11 @@ class _YOLOXTrainer:
             exp.exp_name = exp_name
 
             resume = i > 0
+            ckpt_path = self.pretrained_weights if i == 0 else None
             args = argparse.Namespace(
                 experiment_name=exp_name,
                 resume=resume,
-                ckpt=None,
+                ckpt=ckpt_path,
                 start_epoch=None,
                 num_machines=1,
                 machine_rank=0,
@@ -363,6 +366,8 @@ class _YOLOXTrainer:
                 "names": class_names,
                 "nc": len(class_names),
                 "input_size": list(self.input_size),
+                "depth": cfg["depth"],
+                "width": cfg["width"],
             },
             output_model_path,
         )

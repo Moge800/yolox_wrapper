@@ -338,6 +338,7 @@ class YOLOX:
         imgsz: int = 640,
         workers: int = 4,
         val_split: float | None = None,
+        pretrained_weights: str | None = None,
         on_log: Callable[[str], None] | None = None,
         on_stage_done: Callable[[int, int, str], None] | None = None,
         **kwargs: Any,
@@ -345,27 +346,31 @@ class YOLOX:
         """学習を実行する
 
         Args:
-            data:         data.yaml パス (Label Studio COCO エクスポートを指定)
-            epochs:       学習エポック数 (整数 or リスト [100, 200, 300])
-            batch:        バッチサイズ
-            device:       デバイス ('cpu' / 'cuda' / 'cuda:0')
-            imgsz:        入力画像サイズ
-            workers:      データローダーワーカー数
-            val_split:    検証データ割合 (省略時は data.yaml の値を使用)
-            on_log:       ログコールバック (GUI 連携用)
-            on_stage_done: ステージ完了コールバック (GUI 連携用)
+            data:               data.yaml パス (Label Studio COCO エクスポートを指定)
+            epochs:             学習エポック数 (整数 or リスト [100, 200, 300])
+            batch:              バッチサイズ
+            device:             デバイス ('cpu' / 'cuda' / 'cuda:0')
+            imgsz:              入力画像サイズ
+            workers:            データローダーワーカー数
+            val_split:          検証データ割合 (省略時は data.yaml の値を使用)
+            pretrained_weights: fine-tuning 用の重みファイルパス (.pt / .pth)。
+                                省略時は YOLOX("model.pt") で読み込んだモデルを自動使用。
+            on_log:             ログコールバック (GUI 連携用)
+            on_stage_done:      ステージ完了コールバック (GUI 連携用)
 
         Returns:
             self (メソッドチェーン可)
         """
+        # fine-tuning: .pt から読み込んだ場合は model_size を自動推定
         if self._model_size is None and self._model_path is not None:
-            # 学習済みモデルから追加学習 (fine-tuning) は未対応
-            raise RuntimeError(
-                "学習済みモデルからの追加学習は現在未対応です。\n"
-                "新規学習は YOLOX('l') のようにモデルサイズを指定してください。"
-            )
+            self._model_size = self._infer_model_size_from_path(self._model_path)
+
         if self._model_size is None:
             raise RuntimeError("モデルサイズが設定されていません。")
+
+        # pretrained_weights 未指定かつ fine-tuning の場合は自動設定
+        if pretrained_weights is None and self._model_path is not None:
+            pretrained_weights = self._model_path
 
         # data.yaml 読み込み
         data_cfg = self._load_data_config(data)
@@ -416,6 +421,7 @@ class YOLOX:
             batch_size=batch,
             device=device,
             num_workers=workers,
+            pretrained_weights=pretrained_weights,
         )
 
         trainer.train_sequential(
@@ -435,6 +441,38 @@ class YOLOX:
         self._load_checkpoint(model_path, verbose=True)
         self._model_path = model_path
         return self
+
+    # ------------------------------------------------------------------
+    # モデルサイズ推定
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _infer_model_size_from_path(model_path: str) -> str:
+        """学習済み .pt から model_size を推定する。
+
+        depth/width が保存されていればそこから逆引きし、
+        なければファイル名に含まれるサイズ文字列で判定する。
+        """
+        ckpt = torch.load(model_path, map_location="cpu", weights_only=False)
+        if isinstance(ckpt, dict):
+            depth = ckpt.get("depth")
+            width = ckpt.get("width")
+            if depth is not None and width is not None:
+                depth, width = float(depth), float(width)
+                for size, cfg in _MODEL_CONFIGS.items():
+                    if cfg["depth"] == depth and cfg["width"] == width:
+                        return size
+
+        # ファイル名から推定
+        stem = Path(model_path).stem.lower()
+        for size in _MODEL_CONFIGS:
+            if size in stem:
+                return size
+
+        raise ValueError(
+            f"モデルサイズを自動判定できません: {model_path}\n"
+            "YOLOX('l', ...) のように明示的にモデルサイズを指定してください。"
+        )
 
     # ------------------------------------------------------------------
     # モデル読み込み
