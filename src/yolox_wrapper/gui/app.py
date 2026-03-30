@@ -128,3 +128,8 @@ class App(tk.Tk):
     def destroy(self) -> None:
         self._camera_tab.stop()
         super().destroy()
+
+
+def main() -> None:
+    app = App()
+    app.mainloop()

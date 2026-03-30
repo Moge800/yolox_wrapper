@@ -16,9 +16,9 @@ GUI 起動:
 
 
 def main() -> None:
-    from yolox_wrapper.gui.app import App
-    app = App()
-    app.mainloop()
+    from yolox_wrapper.gui.app import main as _gui_main
+
+    _gui_main()
 
 
 if __name__ == "__main__":
