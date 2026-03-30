@@ -21,15 +21,19 @@ from yolox_wrapper.wrapper import (
 # _normalize_model_size
 # ---------------------------------------------------------------------------
 
+
 class TestNormalizeModelSize:
-    @pytest.mark.parametrize("inp,expected", [
-        ("l",       "l"),
-        ("yolox_l", "l"),
-        ("yolox-l", "l"),
-        ("YOLOX_S", "s"),
-        ("nano",    "nano"),
-        ("x",       "x"),
-    ])
+    @pytest.mark.parametrize(
+        "inp,expected",
+        [
+            ("l", "l"),
+            ("yolox_l", "l"),
+            ("yolox-l", "l"),
+            ("YOLOX_S", "s"),
+            ("nano", "nano"),
+            ("x", "x"),
+        ],
+    )
     def test_valid(self, inp: str, expected: str) -> None:
         assert _normalize_model_size(inp) == expected
 
@@ -41,6 +45,7 @@ class TestNormalizeModelSize:
 # ---------------------------------------------------------------------------
 # _letterbox
 # ---------------------------------------------------------------------------
+
 
 class TestLetterbox:
     def test_output_shape(self) -> None:
@@ -70,35 +75,40 @@ class TestLetterbox:
 # _nms_fallback
 # ---------------------------------------------------------------------------
 
+
 class TestNmsFallback:
     def test_empty_input(self) -> None:
-        boxes  = torch.zeros((0, 4))
+        boxes = torch.zeros((0, 4))
         scores = torch.zeros(0)
         keep = _nms_fallback(boxes, scores, 0.5)
         assert keep.numel() == 0
 
     def test_single_box(self) -> None:
-        boxes  = torch.tensor([[0.0, 0.0, 10.0, 10.0]])
+        boxes = torch.tensor([[0.0, 0.0, 10.0, 10.0]])
         scores = torch.tensor([0.9])
         keep = _nms_fallback(boxes, scores, 0.5)
         assert keep.tolist() == [0]
 
     def test_overlapping_boxes_suppressed(self) -> None:
         # ほぼ同じ位置に 2 つのボックス → 高スコアのみ残る
-        boxes = torch.tensor([
-            [0.0, 0.0, 10.0, 10.0],
-            [0.5, 0.5, 10.5, 10.5],
-        ])
+        boxes = torch.tensor(
+            [
+                [0.0, 0.0, 10.0, 10.0],
+                [0.5, 0.5, 10.5, 10.5],
+            ]
+        )
         scores = torch.tensor([0.9, 0.8])
         keep = _nms_fallback(boxes, scores, 0.5)
         assert len(keep) == 1
         assert keep[0].item() == 0
 
     def test_non_overlapping_boxes_kept(self) -> None:
-        boxes = torch.tensor([
-            [0.0,  0.0, 10.0, 10.0],
-            [20.0, 0.0, 30.0, 10.0],
-        ])
+        boxes = torch.tensor(
+            [
+                [0.0, 0.0, 10.0, 10.0],
+                [20.0, 0.0, 30.0, 10.0],
+            ]
+        )
         scores = torch.tensor([0.9, 0.8])
         keep = _nms_fallback(boxes, scores, 0.5)
         assert len(keep) == 2
@@ -107,6 +117,7 @@ class TestNmsFallback:
 # ---------------------------------------------------------------------------
 # YOLOXBoxes / _YOLOXBox
 # ---------------------------------------------------------------------------
+
 
 class TestYOLOXBoxes:
     def _make_boxes(self, n: int) -> YOLOXBoxes:
@@ -141,6 +152,7 @@ class TestYOLOXBoxes:
 # ---------------------------------------------------------------------------
 # YOLOXResult.plot()
 # ---------------------------------------------------------------------------
+
 
 class TestYOLOXResultPlot:
     def test_plot_returns_ndarray(self) -> None:
@@ -179,6 +191,7 @@ class TestYOLOXResultPlot:
 # YOLOX.__init__ (モデルサイズ文字列)
 # ---------------------------------------------------------------------------
 
+
 class TestYOLOXInit:
     def test_init_with_model_size(self) -> None:
         model = YOLOX("l", verbose=False)
@@ -205,6 +218,7 @@ class TestYOLOXInit:
 
 class _DummyModel(nn.Module):
     """torch.save でpickle可能なモジュールレベルのダミーモデル"""
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         b = x.shape[0]
         return torch.zeros(b, 100, 6)  # [batch, anchors, 5+nc]
@@ -213,6 +227,7 @@ class _DummyModel(nn.Module):
 # ---------------------------------------------------------------------------
 # YOLOX.save() / load (モックモデル)
 # ---------------------------------------------------------------------------
+
 
 class TestYOLOXSaveLoad:
     def _make_mock_pt(self, tmp_path: Path) -> str:
@@ -246,3 +261,23 @@ class TestYOLOXSaveLoad:
         model2 = YOLOX(save_path, verbose=False)
         assert model2._class_names == {0: "cat"}
         assert model2._num_classes == 1
+
+
+# ---------------------------------------------------------------------------
+# GUI エントリポイント
+# ---------------------------------------------------------------------------
+
+
+class TestGUIEntryPoint:
+    def test_gui_main_is_importable(self) -> None:
+        """yolox-gui スクリプトのエントリポイントがインポートできる"""
+        from yolox_wrapper.gui.app import main as gui_main
+
+        assert callable(gui_main)
+
+    def test_root_main_delegates_to_gui(self) -> None:
+        """main.py が yolox_wrapper.gui.app.main を呼び出す"""
+        import importlib
+
+        mod = importlib.import_module("main")
+        assert callable(mod.main)
