@@ -3,7 +3,7 @@ name = "yolox-wrapper"
 version = "0.1.0"
 description = "YOLOX training, inference and deployment toolkit"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 
 dependencies = [
     "beep-lite>=0.1.3",
@@ -23,7 +23,7 @@ dependencies = [
 yolox = { git = "https://github.com/Megvii-BaseDetection/YOLOX.git" }
 
 [tool.uv]
-# YOLOX が onnx-simplifier==0.4.10 をピン留めしているが Python 3.13 でビルド不可。
+# YOLOX が onnx-simplifier==0.4.10 をピン留めしているが新しい Python でビルド不可。
 # バージョンピンを緩和して解決する。
 override-dependencies = [
     "onnx-simplifier>=0.4.10",
@@ -38,7 +38,7 @@ dev = [
 ]
 
 [project.scripts]
-yolox-gui = "main:main"
+yolox-gui = "yolox_wrapper.gui.app:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -53,7 +53,7 @@ packages = ["src/yolox_wrapper"]
 [tool.ruff]
 line-length = 100
 src = ["src"]
-target-version = "py313"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
