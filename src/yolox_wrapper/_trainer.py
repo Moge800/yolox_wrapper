@@ -78,7 +78,6 @@ def _build_config(
     depth: float,
     width: float,
     max_epoch: int,
-    batch_size: int,
     num_workers: int,
     basic_lr_per_img: float,
     train_ann: str,
@@ -259,7 +258,6 @@ class _YOLOXTrainer:
                 depth=cfg["depth"],
                 width=cfg["width"],
                 max_epoch=target_epoch,
-                batch_size=self.batch_size,
                 num_workers=self.num_workers,
                 basic_lr_per_img=self.basic_lr_per_img,
                 train_ann="instances_train.json",
@@ -275,6 +273,8 @@ class _YOLOXTrainer:
                 ckpt=ckpt_path,
                 start_epoch=None,
                 fp16=False,
+                batch_size=self.batch_size,
+                cache=None,
             )
 
             with _LogRedirector(on_log):
