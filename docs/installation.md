@@ -20,7 +20,7 @@ cd yolox_wrapper
 uv sync
 ```
 
-> `uv sync` により `pyproject.toml` に定義されたすべての依存パッケージ（YOLOX 本体を含む）が自動的にインストールされます。
+> `uv sync` により `pyproject.toml` に定義されたすべての依存パッケージ（pixeltable-yolox を含む）が自動的にインストールされます。
 
 ### 3. 動作確認
 
@@ -40,7 +40,7 @@ uv run python -c "from yolox_wrapper import YOLOX; print('OK')"
 | numpy | >= 1.24, < 2.0 | 数値計算 |
 | pillow | >= 10.0 | GUI での画像表示 |
 | pyyaml | >= 6.0 | data.yaml のパース |
-| yolox | Git (Megvii) | YOLOX モデル定義・学習ロジック |
+| pixeltable-yolox | >= 0.4.2 | YOLOX モデル定義・学習ロジック (Python 3.9–3.13 対応) |
 | beep-lite | >= 0.1.3 | 学習完了通知音 |
 
 ### 開発用パッケージ

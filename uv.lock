@@ -7,9 +7,6 @@ resolution-markers = [
     "(platform_machine != 'aarch64' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')",
 ]
 
-[manifest]
-overrides = [{ name = "onnx-simplifier", specifier = ">=0.4.10" }]
-
 [[package]]
 name = "absl-py"
 version = "2.4.0"
@@ -632,15 +629,6 @@ wheels = [
 ]
 
 [[package]]
-name = "onnx-simplifier"
-version = "0.5.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "onnxsim" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/93/37/229570fd8ca86aca41ec893525950de95a33891521d63da3517162545dc8/onnx_simplifier-0.5.0.tar.gz", hash = "sha256:6f15c75a68161a618d5e2ef9fd5e9417fe296b13dd71560406b510fbf027825f", size = 728, upload-time = "2026-02-21T10:35:22Z" }
-
-[[package]]
 name = "onnxsim"
 version = "0.6.2"
 source = { registry = "https://pypi.org/simple" }
@@ -749,6 +737,31 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/01/4a/9202e8d11714c1fc5951f2e1ef362f2d7fbc595e1f6717971d5dd750e969/pillow-12.1.1-cp314-cp314t-win32.whl", hash = "sha256:d2912fd8114fc5545aa3a4b5576512f64c55a03f3ebcca4c10194d593d43ea36", size = 6438736, upload-time = "2026-02-11T04:22:46.347Z" },
     { url = "https://files.pythonhosted.org/packages/f3/ca/cbce2327eb9885476b3957b2e82eb12c866a8b16ad77392864ad601022ce/pillow-12.1.1-cp314-cp314t-win_amd64.whl", hash = "sha256:4ceb838d4bd9dab43e06c363cab2eebf63846d6a4aeaea283bbdfd8f1a8ed58b", size = 7182894, upload-time = "2026-02-11T04:22:48.114Z" },
     { url = "https://files.pythonhosted.org/packages/ec/d2/de599c95ba0a973b94410477f8bf0b6f0b5e67360eb89bcb1ad365258beb/pillow-12.1.1-cp314-cp314t-win_arm64.whl", hash = "sha256:7b03048319bfc6170e93bd60728a1af51d3dd7704935feb228c4d4faab35d334", size = 2546446, upload-time = "2026-02-11T04:22:50.342Z" },
+]
+
+[[package]]
+name = "pixeltable-yolox"
+version = "0.4.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "loguru" },
+    { name = "ninja" },
+    { name = "numpy" },
+    { name = "onnx" },
+    { name = "onnxsim" },
+    { name = "opencv-python" },
+    { name = "psutil" },
+    { name = "pycocotools" },
+    { name = "tabulate" },
+    { name = "tensorboard" },
+    { name = "thop" },
+    { name = "torch" },
+    { name = "torchvision" },
+    { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/25/d7/dfddbe690fd0382a8c3d03f970d60b5069d2ab0669e5c3ccc1543d655324/pixeltable_yolox-0.4.2.tar.gz", hash = "sha256:e67e5643c93bac8f4132198a284533acd15f67b154bc700120b73c69c0d20f7c", size = 89052, upload-time = "2025-04-24T06:09:02.199Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a1/2c/882c9e5be424311db935e244f6605b390a282542be37f188d5bc5241b4ac/pixeltable_yolox-0.4.2-py3-none-any.whl", hash = "sha256:3482e555047d5421fd45e2e42e15dd293676abe63aadfa16aa197bf7a25fec42", size = 113613, upload-time = "2025-04-24T06:09:00.131Z" },
 ]
 
 [[package]]
@@ -1188,27 +1201,6 @@ wheels = [
 ]
 
 [[package]]
-name = "yolox"
-version = "0.3.0"
-source = { git = "https://github.com/Megvii-BaseDetection/YOLOX.git#6ddff4824372906469a7fae2dc3206c7aa4bbaee" }
-dependencies = [
-    { name = "loguru" },
-    { name = "ninja" },
-    { name = "numpy" },
-    { name = "onnx" },
-    { name = "onnx-simplifier" },
-    { name = "opencv-python" },
-    { name = "psutil" },
-    { name = "pycocotools" },
-    { name = "tabulate" },
-    { name = "tensorboard" },
-    { name = "thop" },
-    { name = "torch" },
-    { name = "torchvision" },
-    { name = "tqdm" },
-]
-
-[[package]]
 name = "yolox-wrapper"
 version = "0.1.0"
 source = { editable = "." }
@@ -1217,10 +1209,10 @@ dependencies = [
     { name = "numpy" },
     { name = "opencv-python" },
     { name = "pillow" },
+    { name = "pixeltable-yolox" },
     { name = "pyyaml" },
     { name = "torch" },
     { name = "torchvision" },
-    { name = "yolox" },
 ]
 
 [package.dev-dependencies]
@@ -1237,10 +1229,10 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.24,<2.0" },
     { name = "opencv-python", specifier = ">=4.8" },
     { name = "pillow", specifier = ">=10.0" },
+    { name = "pixeltable-yolox", specifier = ">=0.4.2" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "torch", specifier = ">=2.11.0" },
     { name = "torchvision", specifier = ">=0.26.0" },
-    { name = "yolox", git = "https://github.com/Megvii-BaseDetection/YOLOX.git" },
 ]
 
 [package.metadata.requires-dev]
