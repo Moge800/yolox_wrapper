@@ -1,6 +1,6 @@
 # YOLOX Wrapper
 
-[YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) 物体検出モデルの学習・推論・ONNX エクスポートを簡単に扱える Python ツールキットです。  
+[pixeltable-yolox](https://github.com/pixeltable/pixeltable-yolox) をバックエンドとした YOLOX 物体検出モデルの学習・推論・ONNX エクスポートを簡単に扱える Python ツールキットです。  
 ultralytics YOLO ライクな API と tkinter ベースの GUI を提供します。
 
 ## 主な機能

@@ -13,20 +13,7 @@ dependencies = [
     "pyyaml>=6.0",
     "torch>=2.11.0",
     "torchvision>=0.26.0",
-    "yolox",
-]
-
-# ---------------------------------------------------------------------------
-# uv
-# ---------------------------------------------------------------------------
-[tool.uv.sources]
-yolox = { git = "https://github.com/Megvii-BaseDetection/YOLOX.git" }
-
-[tool.uv]
-# YOLOX が onnx-simplifier==0.4.10 をピン留めしているが新しい Python でビルド不可。
-# バージョンピンを緩和して解決する。
-override-dependencies = [
-    "onnx-simplifier>=0.4.10",
+    "pixeltable-yolox>=0.4.2",
 ]
 
 [dependency-groups]
@@ -35,6 +22,7 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.9",
     "ty>=0.0.0a1",
+    "types-PyYAML>=6.0",
 ]
 
 [project.scripts]

@@ -525,29 +525,23 @@ class YOLOX:
 
     def _build_from_state_dict(self, state_dict: dict, ckpt: dict) -> nn.Module:
         try:
-            from yolox.models import (
-                YOLOPAFPN,
-                YOLOXHead,
-            )
-            from yolox.models import (
-                YOLOX as _YOLOXModel,
-            )
+            from yolox.models import YoloPafpn, YoloxHead, YoloxModule
 
             nc = int(ckpt.get("nc", 80))
             depth = float(ckpt.get("depth", 0.33))
             width = float(ckpt.get("width", 0.50))
             in_ch = [256, 512, 1024]
 
-            backbone = YOLOPAFPN(depth, width, in_channels=in_ch)
-            head = YOLOXHead(nc, width, in_channels=in_ch)
-            model = _YOLOXModel(backbone, head)
+            backbone = YoloPafpn(depth, width, in_channels=in_ch)
+            head = YoloxHead(nc, width, in_channels=in_ch)
+            model = YoloxModule(backbone, head)
             model.load_state_dict(state_dict)
             return model
 
         except ImportError as e:
             raise ImportError(
-                "state_dict 形式のチェックポイントを読み込むには yolox パッケージが必要です。\n"
-                "  uv pip install git+https://github.com/Megvii-BaseDetection/YOLOX.git"
+                "state_dict 形式のチェックポイントを読み込むには pixeltable-yolox パッケージが必要です。\n"
+                "  pip install pixeltable-yolox"
             ) from e
 
     def _infer_class_info(self) -> None:
