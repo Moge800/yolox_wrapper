@@ -67,8 +67,8 @@ class TestLetterbox:
     def test_fill_value(self) -> None:
         img = np.zeros((100, 200, 3), dtype=np.uint8)  # 横長
         result, _ = _letterbox(img, (640, 640), fill_value=114)
-        # 上下がパディングされている
-        assert result[0, 0, 0] == 114  # 左上はパディング領域
+        # 左上配置なので右下がパディング領域
+        assert result[-1, -1, 0] == 114
 
 
 # ---------------------------------------------------------------------------

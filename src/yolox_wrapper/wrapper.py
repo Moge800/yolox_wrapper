@@ -190,9 +190,7 @@ def _letterbox(
 
     padded = np.full((nh, nw, 3), fill_value, dtype=np.uint8)
     resized = cv2.resize(image, (rw, rh), interpolation=cv2.INTER_LINEAR)
-    top = (nh - rh) // 2
-    left = (nw - rw) // 2
-    padded[top : top + rh, left : left + rw] = resized
+    padded[:rh, :rw] = resized
     return padded, r
 
 
