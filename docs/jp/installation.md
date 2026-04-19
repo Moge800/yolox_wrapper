@@ -34,13 +34,15 @@ uv run python -c "from yolox_wrapper import YOLOX; print('OK')"
 
 | パッケージ | バージョン | 用途 |
 |-----------|-----------|------|
-| torch | >= 2.11.0 | ディープラーニングフレームワーク |
-| torchvision | >= 0.26.0 | NMS 等の画像処理ユーティリティ |
+| torch | >= 2.5.1 | ディープラーニングフレームワーク |
+| torchvision | >= 0.20.1 | NMS 等の画像処理ユーティリティ |
 | opencv-python | >= 4.8 | 画像の読み込み・描画 |
 | numpy | >= 1.24, < 2.0 | 数値計算 |
 | pillow | >= 10.0 | GUI での画像表示 |
 | pyyaml | >= 6.0 | data.yaml のパース |
 | pixeltable-yolox | >= 0.4.2 | YOLOX モデル定義・学習ロジック (Python 3.9–3.13 対応) |
+| onnx | >= 1.16 | ONNX エクスポート |
+| ml-dtypes | >= 0.5.0 | onnx の依存ライブラリ |
 | beep-lite | >= 0.1.3 | 学習完了通知音 |
 
 ### 開発用パッケージ
