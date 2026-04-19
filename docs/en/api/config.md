@@ -83,7 +83,7 @@ Returns a list of all defined profile names.
 #### `get()`
 
 ```python
-def get(profile: str = "default") -> ProfileParams
+def get(self, profile: str = "default") -> ProfileParams
 ```
 
 Returns the parameters for the specified profile as `ProfileParams`.  
@@ -92,7 +92,7 @@ Falls back to `"default"` if the specified profile doesn't exist.
 #### `set()`
 
 ```python
-def set(profile: str, key: str, value: str) -> None
+def set(self, profile: str, key: str, value: str) -> None
 ```
 
 Updates a single key in the specified profile.
@@ -100,7 +100,7 @@ Updates a single key in the specified profile.
 #### `set_params()`
 
 ```python
-def set_params(profile: str, params: ProfileParams) -> None
+def set_params(self, profile: str, params: ProfileParams) -> None
 ```
 
 Writes all fields of `ProfileParams` at once.
@@ -108,7 +108,7 @@ Writes all fields of `ProfileParams` at once.
 #### `add_profile()`
 
 ```python
-def add_profile(profile: str) -> None
+def add_profile(self, profile: str) -> None
 ```
 
 Adds a new profile with default values.
@@ -116,7 +116,7 @@ Adds a new profile with default values.
 #### `remove_profile()`
 
 ```python
-def remove_profile(profile: str) -> bool
+def remove_profile(self, profile: str) -> bool
 ```
 
 Removes the specified profile. Cannot remove `"default"`, returns `False`.

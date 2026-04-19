@@ -119,7 +119,7 @@ def _build_config(
 )
 ```
 
-Dynamically generates a `YoloxConfig` subclass. Returns a configuration class with training settings (epochs, data paths, etc.) embedded.
+Dynamically generates a `YoloxConfig` subclass and returns a `YoloxConfig` instance with training settings (epochs, data paths, etc.) embedded.
 
 ---
 

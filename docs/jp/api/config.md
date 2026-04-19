@@ -83,7 +83,7 @@ def profiles(self) -> list[str]
 #### `get()`
 
 ```python
-def get(profile: str = "default") -> ProfileParams
+def get(self, profile: str = "default") -> ProfileParams
 ```
 
 指定プロファイルのパラメータを `ProfileParams` として返します。  
@@ -92,7 +92,7 @@ def get(profile: str = "default") -> ProfileParams
 #### `set()`
 
 ```python
-def set(profile: str, key: str, value: str) -> None
+def set(self, profile: str, key: str, value: str) -> None
 ```
 
 指定プロファイルの単一キーを更新します。
@@ -100,7 +100,7 @@ def set(profile: str, key: str, value: str) -> None
 #### `set_params()`
 
 ```python
-def set_params(profile: str, params: ProfileParams) -> None
+def set_params(self, profile: str, params: ProfileParams) -> None
 ```
 
 `ProfileParams` の全フィールドを一括で書き込みます。
@@ -108,7 +108,7 @@ def set_params(profile: str, params: ProfileParams) -> None
 #### `add_profile()`
 
 ```python
-def add_profile(profile: str) -> None
+def add_profile(self, profile: str) -> None
 ```
 
 デフォルト値で新しいプロファイルを追加します。
@@ -116,7 +116,7 @@ def add_profile(profile: str) -> None
 #### `remove_profile()`
 
 ```python
-def remove_profile(profile: str) -> bool
+def remove_profile(self, profile: str) -> bool
 ```
 
 指定プロファイルを削除します。`"default"` は削除できず `False` を返します。
