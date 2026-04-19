@@ -100,25 +100,26 @@ def package_model(
 
 ---
 
-## `_build_exp()` 関数
+## `_build_config()` 関数
 
 ```python
-def _build_exp(
+def _build_config(
+    name: str,
     num_classes: int,
     data_dir: str,
     input_size: tuple[int, int],
     depth: float,
     width: float,
     max_epoch: int,
-    batch_size: int,
     num_workers: int,
     basic_lr_per_img: float,
     train_ann: str,
     val_ann: str,
+    output_dir: str,
 )
 ```
 
-YOLOX の `Exp` サブクラスを動的に生成します。学習設定（エポック数、バッチサイズ、データパス等）を組み込んだ設定クラスを返します。
+`YoloxConfig` サブクラスを動的に生成し、学習設定（エポック数、データパス等）を組み込んだ `YoloxConfig` インスタンスを返します。
 
 ---
 
